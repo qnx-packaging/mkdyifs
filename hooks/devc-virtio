@@ -1,0 +1,2 @@
+devc-virtio $hook_devc_params
+waitfor /dev/vcon1

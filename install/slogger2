@@ -1,0 +1,6 @@
+# slogger2
+usr/bin/slogger2=slogger2
+usr/bin/slog2info=slog2info
+usr/lib/libslog2.so.1=libslog2.so.1
+[type=link] usr/lib/libslog2.so=libslog2.so.1
+usr/lib/libslog2parse.so.1=libslog2parse.so.1

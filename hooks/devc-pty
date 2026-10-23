@@ -1,0 +1,2 @@
+devc-pty -n 32
+waitfor /dev/ttyp0

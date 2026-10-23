@@ -1,0 +1,3 @@
+usr/bin/fsevmgr=fsevmgr
+libfsnotify.so.1
+[+dupignore] usr/lib/libslog2.so.1=libslog2.so.1

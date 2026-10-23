@@ -1,0 +1,24 @@
+xarch="aarch64"
+startup_addr="0x8000000"
+startup_args="virtual=aarch64le,raw"
+startup_cmd="startup-bcm2712-rpi5 -u reg -a"
+# TODO: see if we can enable the rtc even if no battery backup
+hooks="slogger2 fsevmgr pci rpi5 devb-sdmmc-bcm2712 rootfs devc-serpl011-rpi5 devc-pty late-init"
+hook_rtc_params="-b 0x9010000 primecell"
+hook_pci_hw_module="pci_hw-bcm2712-rpi5.so"
+hook_pci_hw_config="
+[PI5]
+MAX_GEN_SPEED=3
+"
+hook_pci_sever_config="
+[buscfg]
+PCI_SERVER_BUSCFG_MODULE=/ifs/usr/lib/dll/pci_server-buscfg-generic.so
+DO_BUS_CONFIG=yes
+"
+hook_devb_params="sdio addr=0x1000fff000,irq=305 disk name=hd"
+hook_devc_params="-b115200 -c44236800 -e -F -u10 -D 0x107d001000^2,153"
+#TODO get correct random
+hook_late_init_random_params=""
+hook_late_init_io_sock_params="-m phy -m pci -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc"
+devc_console_path="/dev/ser10"
+init="/ifs/init/late_init"

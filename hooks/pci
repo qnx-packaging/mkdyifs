@@ -1,0 +1,9 @@
+#!/usr/bin/sh
+
+if ! pci-server --config=/ifs/etc/pci_server.cfg; then
+    echo "pci-server exits with $?"
+    exit 1
+fi
+waitfor /dev/pci
+# pci_patchup from mkqnximage
+chmod a+rx /dev/pci/server_id_1

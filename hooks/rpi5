@@ -1,0 +1,23 @@
+# Enable RP1's PCI MSIX link
+# This doesn't actually configure any MSIX Interrupts.
+# That is done later with subsequent calls to msix-rp1
+# as required for specific HW.
+msix-rp1 --mode=server &
+
+# We are going to do some generic things here since we have the time
+# Other specfic things like usb and networking will be done JIT
+
+# Enable the GPIO interrupts at MSIX
+msix-rp1 --mode=config 0
+
+# Configure additional UARTs
+# Enable RP1 MSIX UART2/UART4 interrupt
+msix-rp1 --mode=config 43,45
+
+# And lastly we are going to get the fan going
+gpio-rp1 set 45 a0 pd
+fan-rpi5
+waitfor /dev/fan
+echo 200 > /dev/fan
+
+

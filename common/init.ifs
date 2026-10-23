@@ -1,0 +1,80 @@
+[+script] usr/bin/init0 = {
+    # Temporarily link IFS usr to real usr, will be removed by init1
+    # We have to do this step since otherwise we can't launch ksh
+    procmgr_symlink /ifs/usr /usr
+    procmgr_symlink /ifs/usr/lib/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
+
+    setconf TIMEZONE UTC0
+    mount -uo noexec /dev/shmem
+
+    echo "[init0] finished"
+    PATH=/ifs/usr/bin LD_LIBRARY_PATH=/ifs/usr/lib:/ifs/usr/lib/dll ksh /ifs/usr/bin/init1
+}
+
+usr/bin/init1 = {
+    rm /usr
+
+    echo "[init1] finished"
+    while ! ksh /ifs/usr/bin/init2; do
+       echo "[init1] failed to start init2! dropping to emergency shell"
+       echo "[init1] try to fix your system here, and exit ksh"
+
+       ksh
+    done
+}
+
+usr/bin/init2 = {
+    set -e
+
+    # Run each individual init script
+    for s in /ifs/init/*-*; do
+        echo "[init2] executing init script $s"
+        on -p 99 ksh $s
+    done
+
+
+    export PATH=/usr/local/bin:/usr/bin
+    export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/usr/lib/dll
+    echo "[init2] finished"
+    ${init}
+}
+
+# Toybox
+usr/bin/toybox=toybox
+[type=link] usr/bin/cat=toybox
+[type=link] usr/bin/chmod=toybox
+[type=link] usr/bin/dd=toybox
+[type=link] usr/bin/echo=toybox
+[type=link] usr/bin/ln=toybox
+[type=link] usr/bin/ls=toybox
+[type=link] usr/bin/cp=toybox
+[type=link] usr/bin/rm=toybox
+[type=link] usr/bin/grep=toybox
+[type=link] usr/bin/mkdir=toybox
+
+# Utils
+usr/bin/on=on
+[type=link] usr/bin/waitfor=on
+[type=link] usr/bin/ability=on
+usr/bin/setfacl=setfacl
+usr/bin/ksh=ksh
+[type=link] usr/bin/sh=ksh
+usr/bin/mount=mount
+usr/bin/umount=umount
+usr/bin/getconf=getconf
+[type=link] usr/bin/setconf=getconf
+usr/bin/pidin=pidin
+usr/bin/sync=sync
+
+# libs
+usr/lib/libc.so.6=libc.so.6
+usr/lib/ldqnx-64.so.2=ldqnx-64.so.2
+usr/lib/libgcc_s.so.1=libgcc_s.so.1
+usr/lib/libqh.so.1=libqh.so.1
+
+## Required by toybox
+usr/lib/libfsnotify.so.1=libfsnotify.so.1
+usr/lib/libsecpol.so.1=libsecpol.so.1
+usr/lib/libm.so.3=libm.so.3
+usr/lib/libz.so.2=libz.so.2
+# Core hook end

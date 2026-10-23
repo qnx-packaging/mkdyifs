@@ -1,0 +1,90 @@
+#!/bin/bash -e
+
+help() {
+  echo "mkdyifs [PRESET] [OUTPUT_FOLDER]"
+}
+
+msg() {
+  echo "[mkdyifs] $*"
+}
+
+mkdyifs_envsubst() {
+  envsubst "$defined_vars"
+}
+
+if ! [[ -f $1 ]]; then
+  msg "Preset file not found at $1"
+  exit 1
+fi
+
+set -a
+
+hooks=""
+
+if ! source "$1"; then
+  msg "Invalid preset file at $1: $?"
+  exit 1
+fi
+set +a
+defined_vars=$(env | cut -d '=' -f 1 | sed 's:^:$:g' | tr '\n' ' ')
+
+# Magic starts here
+
+script_path="$(realpath -e -- "${BASH_SOURCE[0]}")"
+data_dir="$(dirname -- "${script_path}")"
+
+out_dir="./out"
+
+if [[ -n "${MKDYIFS_DATADIR:-}" ]]; then
+  if ! data_dir="$(realpath -e -- "${MKDYIFS_DATADIR}" 2>/dev/null)"; then
+    msg "MKDISTRO_DATADIR='${MKDISTRO_DATADIR}' does not exist;"
+  fi
+fi
+
+if ! [[ -z $2 ]]; then
+  out_dir=$(realpath "$2")
+fi
+msg "Using $out_dir as output directory"
+mkdir -p "$out_dir"
+
+# First process the main ifs file
+ifs_build_path="$out_dir"/ifs.build
+ifs_bin_path="$out_dir"/ifs.bin
+ifs_log_path="$out_dir"/ifs.log
+mkdyifs_envsubst <"$data_dir"/common/base.ifs >>"$ifs_build_path"
+
+# Then the init section
+mkdyifs_envsubst <"$data_dir"/common/init.ifs >>"$ifs_build_path"
+
+# Then all the hooks
+counter=0
+for hook in $hooks; do
+  if ! [[ -f "$data_dir/hooks/$hook" ]]; then
+    msg "hook file not exist for $hook! exiting"
+    exit 1
+  elif ! [[ -f "$data_dir/install/$hook" ]]; then
+    msg "install file not exist for $hook! exiting"
+    exit 1
+  fi
+
+  {
+    printf '# %s begin\n' "$hook"
+    # Hook block
+    printf "init/%02d-%s = {\n" "$counter" "$hook"
+    mkdyifs_envsubst <"$data_dir/hooks/$hook"
+    printf "}\n"
+    # Install block
+    mkdyifs_envsubst <"$data_dir/install/$hook"
+    printf '# %s end\n' "$hook"
+  } >>"$ifs_build_path"
+  counter=$((counter + 1))
+done
+
+# At the end we need to set the prefix for any autoso libraries which is effectivly just contacting lines to the end of the file
+# and thus will not have a prefix
+printf '[prefix="usr/lib"]' >>"$ifs_build_path"
+
+if ! mkifs -vvv "$ifs_build_path" "$ifs_bin_path" 2>&1 | tee "$ifs_log_path"; then
+  msg "IFS generation failed, see full ifs.build and build log at $out_dir"
+  exit 1
+fi

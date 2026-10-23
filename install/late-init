@@ -1,0 +1,103 @@
+# Bootstrap utils
+init/late_init = {
+#!/bin/bash
+
+if [[ -f /bin/init ]]; then
+    echo "Using init in the real filesystem"
+    if /bin/init; then
+       exit 0
+    else
+        echo "Real filesystem init doesn't work! Falling back to default one"
+    fi
+else
+    echo "/bin/init not found, using fallback init"
+fi
+
+echo "PIPE INIT"
+on -p 98 /usr/bin/pipe
+waitfor /dev/pipe
+
+echo "MQUEUE INIT"
+on -p 98 /usr/bin/mqueue
+waitfor /dev/mqueue
+
+if ! [[ -f /bin/ls ]]; then
+   echo "HACK: BUSYBOX LINKING"
+   /usr/bin/busybox --install -s /usr/bin
+fi
+
+chmod 755 /etc
+chmod 755 /usr
+chmod 755 /usr/lib
+chmod 755 /usr/bin
+
+echo "TMPFS INIT"
+# Calculate total memory in bytes
+tmem=$(($(cat /proc/vm/stats | grep page_count | cut -d'=' -f2 | cut -d' ' -f1)))
+
+tmpfs_size=$((tmem / 20 * 4096))
+echo "[tmpfs] Allocating $tmpfs_size bytes for /tmp"
+# Use 5% of total memory as tmpfs
+devb-ram ram capacity=1 blk ramdisk="$tmpfs_size"
+waitfor /dev/ram0
+mkqnx6fs -q /dev/ram0
+mount /dev/ram0 /tmp
+chmod 1777 /tmp
+
+if [[ -x /usr/bin/openrc ]]; then
+    echo "OPENRC INIT"
+    /usr/bin/openrc default
+else
+    echo "OPENRC UNAVIL, USING FALLBACK BASIC INIT"
+    echo "RANDOM INIT"
+    on -p 98 sh -c 'random ${hook_late_init_random_params}'
+    waitfor /dev/random
+
+    echo "SOCKET INIT"
+    on -p 98 sh -c 'io-sock ${hook_late_init_io_sock_params}'
+    waitfor /dev/socket
+
+    echo "DHCPCD INIT"
+    on -p 20 dhcpcd -bq
+
+    echo "SSHD INIT"
+    if ! [[ -f /etc/ssh/ssh_host_rsa_key ]]; then
+        echo "SSHD HOST KEY INIT"
+        ssh-keygen -A
+    fi
+    on -p 20 /usr/bin/sshd
+fi
+
+if [[ -x /usr/lib/apk/rerun_once_apk_triggers.sh ]]; then
+    echo "INITIALIZING APK-TOOLS TRIGGERS"
+    /usr/lib/apk/rerun_once_apk_triggers.sh
+fi
+
+export TERMINFO=/usr/share/terminfo
+export TERM=xterm-256color
+on -d -t ${devc_console_path} sh -c '/ifs/usr/bin/reopen ${devc_console_path} && while true; do login; sleep 1; done'
+}
+
+usr/bin/reopen = {
+#!/bin/sh -e
+
+reopen_dev="$1"
+if test -z "$reopen_dev"; then
+    reopen_dev="/dev/console"
+fi
+
+if test ! -c $reopen_dev; then
+	echo unable to reopen $reopen_dev
+else
+	exec <> $reopen_dev >&0 2>&0
+fi
+}
+
+# Things you may need to bootstrap
+#[autoso=add]usr/bin/fdisk=fdisk
+#usr/bin/mkqnx6fs=mkqnx6fs
+#usr/bin/fsevmgr=fsevmgr
+#usr/lib/libjail.so=libjail.so
+#usr/bin/qtrace=qtrace
+#usr/lib/libqtrace.so=libqtrace.so
+#usr/lib/io-sock=io-sock

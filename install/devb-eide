@@ -1,0 +1,7 @@
+usr/bin/devb-eide=devb-eide
+usr/lib/libcam.so.2=libcam.so.2
+usr/lib/dll/io-blk.so=dll/io-blk.so
+usr/lib/dll/cam-disk.so=dll/cam-disk.so
+# Even if your system doesn't use pci devb-virtio is linked to pci
+# we add dupignore so that if you have pci and devb-virtio it doesn't conflict
+[+dupignore] usr/lib/libpci.so.3.0=libpci.so.3.0

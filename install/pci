@@ -1,0 +1,29 @@
+
+[perms=0444] etc/pci_server.cfg = {
+${hook_pci_sever_config}
+
+[envars]
+PCI_DEBUG_MODULE=pci_debug2.so
+PCI_HW_CONFIG_FILE=/ifs/etc/pci_hw.cfg
+PCI_HW_MODULE=${hook_pci_hw_module}
+}
+
+[perms=0444] etc/pci_hw.cfg = {
+${hook_pci_hw_config}
+}
+
+usr/bin/pci-server=pci-server
+usr/bin/pci-tool=pci-tool
+usr/lib/libpci.so.3.0=libpci.so.3.0
+[autoso=add] usr/lib/dll/${hook_pci_hw_module}=dll/${hook_pci_hw_module}
+usr/lib/dll/pci_server-buscfg-generic.so=dll/pci_server-buscfg-generic.so
+usr/lib/dll/pci_slog2.so=dll/pci_slog2.so
+
+usr/lib/dll/pci_cap-0x01.so=dll/pci_cap-0x01.so
+usr/lib/dll/pci_cap-0x05.so=dll/pci_cap-0x05.so
+usr/lib/dll/pci_cap-0x10.so=dll/pci_cap-0x10.so
+usr/lib/dll/pci_cap-0x11.so=dll/pci_cap-0x11.so
+
+usr/lib/dll/pci_strings.so=dll/pci_strings.so
+usr/lib/dll/pci_bkwd_compat.so=dll/pci_bkwd_compat.so
+usr/lib/dll/pci_debug2.so=dll/pci_debug2.so

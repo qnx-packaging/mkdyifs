@@ -1,0 +1,8 @@
+#!/usr/bin/sh
+if ! mount -t qnx6 -w -o noatime /dev/hd0.qnx6.1 /; then
+    echo "Failed to mount / ($?)"
+    exit 1
+fi
+
+# Use ldqnx from new root if exists
+toybox unlink /usr/lib/ldqnx-64.so.2

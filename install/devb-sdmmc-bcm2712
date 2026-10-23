@@ -1,0 +1,6 @@
+/usr/bin/devb-sdmmc-bcm2712=devb-sdmmc-bcm2712
+
+usr/lib/libslog2.so.1=libslog2.so.1
+usr/lib/libcam.so.2=libcam.so.2
+usr/lib/dll/io-blk.so=dll/io-blk.so
+usr/lib/dll/cam-disk.so=dll/cam-disk.so

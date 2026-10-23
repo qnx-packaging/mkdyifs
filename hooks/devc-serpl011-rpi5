@@ -1,0 +1,2 @@
+devc-serpl011-rpi5 ${hook_devc_params}
+waitfor ${devc_console_path}

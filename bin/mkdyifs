@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Installed entrypoint for mkdyifs. Self-locating: resolves this script's
+# real path, then execs ../share/mkdyifs/mkdyifs relative to it, so the
+# installed tree can be relocated (under DESTDIR or otherwise) without
+# editing any file.
+
+set -Eeuo pipefail
+
+self="$(realpath -e -- "${BASH_SOURCE[0]}")"
+real="$(realpath -e -- "$(dirname -- "${self}")/../share/mkdyifs/mkdyifs")"
+exec "${real}" "$@"

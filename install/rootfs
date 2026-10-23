@@ -1,0 +1,5 @@
+usr/lib/dll/fs-qnx6.so=dll/fs-qnx6.so
+usr/lib/dll/fs-dos.so=dll/fs-dos.so
+usr/lib/libsocket.so.4=libsocket.so.4
+[type=link] usr/lib/libsocket.so=libsocket.so.4
+usr/lib/libregex.so.1=libregex.so.1

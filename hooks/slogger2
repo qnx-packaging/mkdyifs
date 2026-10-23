@@ -1,0 +1,3 @@
+slogger2
+
+waitfor /dev/slog

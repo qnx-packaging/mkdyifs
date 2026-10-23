@@ -1,0 +1,3 @@
+#!/usr/bin/sh
+
+echo "[late-init] LATE STAGE INIT IN REAL ROOT BEGINS"

@@ -1,0 +1,20 @@
+# The new-age osg ifs
+
+[uid=0 gid=0 dperms=0555 perms=0555]
+[+dupignore]
+[mount="/ifs"]
+[prefix=""]
+
+[image=${startup_addr}]
+[${startup_args}] boot = {
+    ${startup_cmd}
+    PATH=/usr/local/bin:/usr/bin
+    LD_LIBRARY_PATH=/usr/lib:/usr/lib/dll
+    CONFIG_PATH=/etc
+    # The PCI shenanigans must be set globally
+    # Yes it messes up your envs everywhere, I know, it's stupid
+    PCI_SLOG_MODULE=pci_slog2.so
+    PCI_BKWD_COMPAT_MODULE=pci_bkwd_compat.so
+    PCI_CAP_MODULE_DIR=/ifs/usr/lib/dll
+    [+keeplinked uid=0 gid=0 perms=0700] procnto-smp-instr -mr -d 022 -u 066
+}

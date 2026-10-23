@@ -1,0 +1,8 @@
+#!/usr/bin/sh
+
+if ! devb-sdmmc-bcm2712 blk cache=64M,auto=partition,vnode=2000,ncache=2000,commit=low ${hook_devb_params}; then
+    echo "devb-sdmmc-bcm2712 exits with $?"
+    exit 1
+fi
+
+waitfor /dev/hd0
