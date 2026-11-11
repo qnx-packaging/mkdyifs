@@ -46,6 +46,9 @@ chmod 1777 /tmp
 
 if [[ -x /usr/bin/openrc ]]; then
     echo "OPENRC INIT"
+    # We need to clear the old run dir until we have a propper tmpfs
+    # and/or we migrate to letting openrc handle shutdown via libshutdown
+    rm -rf /run/*
     /usr/bin/openrc default
 else
     echo "OPENRC UNAVIL, USING FALLBACK BASIC INIT"
